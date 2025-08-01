@@ -1,0 +1,28 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>File Explorer</title>
+    <link rel="stylesheet" href="site.css" type="text/css">
+</head>
+<body>
+    <button id="openDialogBtn">Launch File Explorer</button>
+
+    <div id="fileExplorerDialog">
+        <button id="closeDialogBtn" style="float:right;">❌</button>
+
+        <input type="text" id="pathInput" placeholder="Enter path..." style="width: 40%;" />
+        <input type="text" id="searchInput" placeholder="🔍 Search (optional)" style="width: 18%;" />
+        <button onclick="loadFiles()" id="pathButton">Browse</button>    
+        <form id="uploadFile" enctype="multipart/form-data" style="margin-top: 10px;">
+            <input type="file" id="fileInput" />
+            <button type="submit">Upload</button>
+        </form>
+        <p id="uploadStatus"></p>
+        
+        <div id="results"></div>
+    </div>
+
+     <!-- TODO helper files?  -->
+    <script type="text/javascript" src="script.js"></script>
+</body>
+</html>

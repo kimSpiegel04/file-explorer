@@ -1,0 +1,32 @@
+body { font-family: sans-serif; padding: 20px; background-color: #4B4F4B; color: #C0C4C4}
+#fileExplorerDialog ul { list-style-type: none; padding: 0; }
+#fileExplorerDialog li { margin-bottom: 5px; }
+#fileExplorerDialog td { font-size: 14px; }
+#fileExplorerDialog a { color: #C0C4C4 }
+#fileExplorerDialog .data:hover { background-color: #363A36; color: #8D8E8E }
+#fileExplorerDialog tr.data:hover a { color: #8D8E8E }
+#fileExplorerDialog .folder { font-weight: bold; }
+#fileExplorerDialog .headerRow a { color: #C0C4C4; text-decoration: none }
+#fileExplorerDialog .headerRow a:visited { color: #C0C4C4;  }
+#fileExplorerDialog {
+    display: none; 
+    position: fixed; 
+    top: 10%; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    background: #4B4F4B; 
+    padding: 20px; 
+    box-shadow: 0 0 20px rgba(0,0,0,0.2); 
+    max-width: 90%; 
+    min-width: 1200px;
+    max-height: 80%; 
+    overflow: auto; 
+    z-index: 1000;
+}
+/* 
+    COLORS
+    Backgrounds: #4B4F4B
+    Text color: #C0C4C4
+    Hover text color: 8D8E8E //slightly darker
+    Hover background color: 363A36 // slightly darker
+*/
