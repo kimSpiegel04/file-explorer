@@ -1,18 +1,22 @@
+// Track current sort preferences for consistency across reloads and navigation
 let currentSortBy = 'size';
 let currentSortDirection = 'asc';
 
+// Open file explorer dialog and initialize state from URL
+// Scope item: Wrap the entire component in a dialog widget with a trigger (e.g., button)
 document.getElementById("openDialogBtn").addEventListener("click", () => {
     const urlParams = new URLSearchParams(window.location.search);
     if (!urlParams.has("path")) {
         urlParams.set("path", "/");
     }
-    urlParams.set("dialog", "true");
+    urlParams.set("dialog", "true"); // track an open dialog box
     history.pushState(null, "", `?${urlParams.toString()}`);
-    syncFromURL();
+    syncFromURL(); // ensure the UI reflects current state
     document.getElementById("fileExplorerDialog").style.display = "block";
     document.getElementById("openDialogBtn").style.display = "none";
 });
 
+// Close dialog and reset display state/UI
 document.getElementById("closeDialogBtn").addEventListener("click", () => {
     const urlParams = new URLSearchParams(window.location.search);
     urlParams.delete("dialog");
@@ -22,6 +26,7 @@ document.getElementById("closeDialogBtn").addEventListener("click", () => {
     document.getElementById("openDialogBtn").style.display = "block";
 });
 
+// Allow ESC key to close the dialog without a mouse
 document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
         document.getElementById("fileExplorerDialog").style.display = "none";
@@ -29,6 +34,7 @@ document.addEventListener("keydown", (e) => {
     }
 });
 
+// Reads current URL parameters and updates the app's state/UI accordingly
 function syncFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
     const path = urlParams.get("path");
@@ -48,7 +54,7 @@ function syncFromURL() {
         document.getElementById("fileExplorerDialog").style.display = "block";
         if (path) {
             document.getElementById("pathInput").value = path;
-            loadFiles(path, page);
+            loadFiles(path, page); // file list api call lives in here
         }
         document.getElementById("openDialogBtn").style.display = "none";
     } else {
@@ -56,21 +62,23 @@ function syncFromURL() {
     }
 }
 
+// Ensure sync runs once after HTML is fully loaded
 window.addEventListener("DOMContentLoaded", syncFromURL);
 
-
+// Toggle sort direction or change sort column, then reload files
 function updateSort(column) {
     const path = document.getElementById("pathInput").value;
     if (currentSortBy === column) {
         currentSortDirection = currentSortDirection === "asc" ? "desc" : "asc";
     } else {
         currentSortBy = column;
-        currentSortDirection = "asc";
+        currentSortDirection = "asc"; // reset sort direction on new column
     }
     // go back to page 1 when sorting
     loadFiles(path, 1); 
 }
 
+// Users can use Enter key for Browse button
 document.addEventListener('DOMContentLoaded', function() {
     var pathInput = document.getElementById("pathInput");
     var searchInput = document.getElementById("searchInput");
@@ -90,6 +98,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// Support upload
 document.getElementById("uploadFile").addEventListener("submit", async function (e) {
     e.preventDefault();
 
@@ -118,6 +127,7 @@ document.getElementById("uploadFile").addEventListener("submit", async function 
     }
 });
 
+// Display readable size (res is in bytes)
 function formatBytes(bytes, decimals = 2) {
     if (bytes === 0) return '0 B';
 
@@ -130,6 +140,7 @@ function formatBytes(bytes, decimals = 2) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
+// Display arrow for sort headers
 function getSortArrow(column) {
     if (currentSortBy !== column) {
         return "";
@@ -137,6 +148,7 @@ function getSortArrow(column) {
     return currentSortDirection === "asc" ? " <span>↑</span>" : " <span>↓</span>";
 }
 
+// Create and populate table to display files/folders
 function createFileTable(path, items) {
     const container = document.getElementById("results");
     const existingTable = document.getElementById("fileTable");
@@ -147,6 +159,7 @@ function createFileTable(path, items) {
     table.id = "fileTable";
     let innerTable = "";
 
+    // Clickable sortable headers
     innerTable += `
         <tr class='headerRow'>
             <th><a href="#" onclick="updateSort('name')">Name${getSortArrow('name')}</a></th>
@@ -155,6 +168,8 @@ function createFileTable(path, items) {
             <th>Actions</th>
         </tr>`;
 
+    // Populate rows with results
+    // Support download of files
     for (var i = 0; i < items.length; i++) {
         let name;
         if (items[i].type === "folder") {
@@ -193,6 +208,9 @@ function createFileTable(path, items) {
     container.appendChild(table);
 }
 
+// Dispaly breadcrumb of current place in directory and links within breadcrumb to backtrack
+// Breadcrumb and input field should match 
+// Both should end with '/' to indicate user is inisde folder
 function renderBreadcrumb(path) {
     const breadcrumbDiv = document.createElement("div");
     breadcrumbDiv.style.marginBottom = "10px";
@@ -250,6 +268,8 @@ function renderBreadcrumb(path) {
     return breadcrumbDiv;
 }
 
+// Get folder/files data from API 
+// Path, pages, sort direction/column
 async function loadFiles(path = document.getElementById("pathInput").value, page = 1) {
     const search = document.getElementById("searchInput").value;
     const urlParams = new URLSearchParams(window.location.search); 
@@ -304,6 +324,7 @@ async function loadFiles(path = document.getElementById("pathInput").value, page
     }
 }
 
+// Support item deletion
 async function deleteItem(path) {
     const currentPath = document.getElementById("pathInput").value;
     if (!confirm("Are you sure you want to delete this item?")) {
@@ -323,6 +344,7 @@ async function deleteItem(path) {
     }
 }
 
+// Support move or copy actions on items
 async function moveOrCopyItem(sourcePath, action) {
     const currentPath = document.getElementById("pathInput").value;
     const root = sourcePath.split('/').slice(0, -1).join('/') || '/'; 
@@ -353,6 +375,7 @@ async function moveOrCopyItem(sourcePath, action) {
     }
 }
 
+// Pagination controls
 function renderPaginationControls(currentPage, totalPages) {
     const container = document.getElementById("results");
     const paginationDiv = document.createElement("div");
@@ -382,4 +405,5 @@ function renderPaginationControls(currentPage, totalPages) {
     container.appendChild(paginationDiv);
 }
 
+// Support for forward/backward page navigation and other page changes
 window.addEventListener("popstate", syncFromURL);
