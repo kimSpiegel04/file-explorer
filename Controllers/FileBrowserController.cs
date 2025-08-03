@@ -14,9 +14,13 @@ namespace TestProject.Controllers {
         {
             _logger = logger;
         }
-
-        // Perform case-insensitive search for folders and files recursively
-        // Begins in current directory
+        /// <summary>
+        /// Perform case-insensitive search for folders and files recursively
+        /// Begins in current directory
+        /// </summary>
+        /// <param name="dirPath"></param>
+        /// <param name="searchTerm"></param>
+        /// <returns></returns>
         private static List<FileSystemItem> RecursiveSearch(string dirPath, string searchTerm)
         {
             var res = new List<FileSystemItem>();
@@ -61,7 +65,11 @@ namespace TestProject.Controllers {
             return res;
         }
 
-        // Recursively copy all files and subdirectories from source to destination
+        /// <summary>
+        /// Recursively copy all files and subdirectories from source to destination
+        /// </summary>
+        /// <param name="sourceDir"></param>
+        /// <param name="destinationDir"></param>
         private void CopyDirectory(string sourceDir, string destinationDir)
         {
             var dir = new DirectoryInfo(sourceDir);
@@ -82,7 +90,18 @@ namespace TestProject.Controllers {
             }
         }
 
-        // Scope item: Implement a Web API to browse and search files & folders (returns JSON).
+        /// <summary>
+        /// Scope item: Implement a Web API to browse and search files and return item metadata
+        /// Sort items (by name, size, or last modified date)
+        /// Supports pagination for larger files (100+ items)
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="search"></param>
+        /// <param name="page"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="sortBy"></param>
+        /// <param name="sortDirection"></param>
+        /// <returns></returns>& folders (returns JSON).
         [HttpGet]
         public IActionResult Get(
             [FromQuery] string path,
@@ -191,7 +210,12 @@ namespace TestProject.Controllers {
             });
         }
 
-        // Scope item: Allow uploading and downloading files from the browser.
+        /// <summary>
+        /// Scope item: Allow uploading and downloading files from the browser.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="file"></param>
+        /// <returns></returns>
         [HttpPost("upload")]
         public async Task<IActionResult> Upload([FromQuery] string path, IFormFile file)
         {
@@ -228,6 +252,11 @@ namespace TestProject.Controllers {
             }
         }
 
+        /// <summary>
+        /// Scope item: Allow uploading and downloading files from the browser.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
         [HttpGet("download")]
         public IActionResult Download([FromQuery] string path)
         {
@@ -248,8 +277,12 @@ namespace TestProject.Controllers {
             var bytes = System.IO.File.ReadAllBytes(absolutePath);
             return File(bytes, mime, fileName);
         }
-
-        // Scope item: Support delete, move, and copy operations for files/folders.
+        /// <summary>
+        /// Scope item: Support delete, move, and copy operations for files/folders.
+        /// Delete items and items within folders
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
         [HttpDelete("delete")]
         public IActionResult Delete([FromQuery] string path)
         {
@@ -282,7 +315,14 @@ namespace TestProject.Controllers {
             }
         }
 
-        // Move or Copy files
+        /// <summary>
+        /// Move or Copy files
+        /// Scope item: Support delete, move, and copy operations for files/folders.
+        /// </summary>
+        /// <param name="sourcePath"></param>
+        /// <param name="destinationPath"></param>
+        /// <param name="action"></param>
+        /// <returns></returns>
         [HttpPost("action")]
         public IActionResult MoveOrCopy([FromQuery] string sourcePath, [FromQuery] string destinationPath, [FromQuery] string action)
         {
@@ -339,9 +379,11 @@ namespace TestProject.Controllers {
             }
         }
 
-        // Lists directories for users to choose from to move/copy items 
-        // Works from cur directory down
-        [HttpGet("directories")]
+        /// <summary>
+        /// Lists directories for users to choose from to move/copy items 
+        /// </summary>
+        /// <param name="root"></param>
+        /// <returns></returns>]
         public IActionResult GetDirectories([FromQuery] string root)
         {
             if (string.IsNullOrWhiteSpace(root))
