@@ -15,6 +15,8 @@ namespace TestProject.Controllers {
             _logger = logger;
         }
 
+        // Perform case-insensitive search for folders and files recursively
+        // Begins in current directory
         private static List<FileSystemItem> RecursiveSearch(string dirPath, string searchTerm)
         {
             var res = new List<FileSystemItem>();
@@ -59,6 +61,7 @@ namespace TestProject.Controllers {
             return res;
         }
 
+        // Recursively copy all files and subdirectories from source to destination
         private void CopyDirectory(string sourceDir, string destinationDir)
         {
             var dir = new DirectoryInfo(sourceDir);
@@ -79,6 +82,7 @@ namespace TestProject.Controllers {
             }
         }
 
+        // Scope item: Implement a Web API to browse and search files & folders (returns JSON).
         [HttpGet]
         public IActionResult Get(
             [FromQuery] string path,
@@ -94,8 +98,10 @@ namespace TestProject.Controllers {
                 return BadRequest(new { error = "Missing path" });
             }
 
+            // Secure the path by combining with configured root directory
             var absolutePath = Path.Combine(Config.RootDirectory, path.TrimStart('/'));
 
+            // Ensure the requested path is actually inside the allowed root
             if (!Directory.Exists(absolutePath))
             {
                 return BadRequest(new { error = "Directory doesn't exist" });
@@ -110,17 +116,19 @@ namespace TestProject.Controllers {
 
             if (!string.IsNullOrEmpty(search))
             {
+                // If search term exists, do a recursive match
                 items = RecursiveSearch(absolutePath, search.ToLower());
             }
             else
             {
+                // Else list only the top-level files and folders
                 items = new List<FileSystemItem>();
                 var folders = Directory.GetDirectories(absolutePath).Select(absolutePath =>
                 {
                     var info = new DirectoryInfo(absolutePath);
                     return new FileSystemItem
                     {
-                        Name = info.Name + "/",
+                        Name = info.Name + "/", // append slash for folder clarity in UI
                         Type = "folder",
                         Size = null,
                         LastModified = info.LastWriteTime
@@ -144,6 +152,8 @@ namespace TestProject.Controllers {
                 items.AddRange(files);
 
             }
+
+            // Sort items 
             // default: sort by size
             IEnumerable<FileSystemItem> sortedItems = sortBy switch
             {
@@ -152,9 +162,12 @@ namespace TestProject.Controllers {
                 "size" => sortDirection == "desc" ? items.OrderByDescending(i => i.Size ?? 0) : items.OrderBy(i => i.Size ?? 0),
                 _ => items.OrderBy(i => i.Name)
             };
+
+            // Pagination
             var skip = (page - 1) * pageSize;
             var pagedItems = sortedItems.Skip(skip).Take(pageSize).ToList();
 
+            // Scope item: Implement file/folder counts and total sizes in the current view.
             var fileCount = items.Count(i => i.Type == "file");
             var folderCount = items.Count(i => i.Type == "folder");
             var totalSize = items
@@ -178,9 +191,11 @@ namespace TestProject.Controllers {
             });
         }
 
+        // Scope item: Allow uploading and downloading files from the browser.
         [HttpPost("upload")]
         public async Task<IActionResult> Upload([FromQuery] string path, IFormFile file)
         {
+            // Validate path and file
             if (string.IsNullOrWhiteSpace(path))
             {
                 return BadRequest("Invalid Path");
@@ -190,6 +205,7 @@ namespace TestProject.Controllers {
                 return BadRequest("Empty file");
             }
 
+            // Final file location
             var absolutePath = Path.Combine(Config.RootDirectory, path.TrimStart('/'));
             if (!Path.GetFullPath(absolutePath).StartsWith(Path.GetFullPath(Config.RootDirectory)))
             {
@@ -201,6 +217,7 @@ namespace TestProject.Controllers {
             {
                 using (var stream = new FileStream(fullPath, FileMode.Create))
                 {
+                    // Write file to disk
                     await file.CopyToAsync(stream);
                 }
                 return Ok(new { fileName = file.FileName });
@@ -219,6 +236,7 @@ namespace TestProject.Controllers {
                 return BadRequest("Invalid file path");
             }
 
+            // Secure path
             var absolutePath = Path.Combine(Config.RootDirectory, path.TrimStart('/'));
             if (!System.IO.File.Exists(absolutePath))
             {
@@ -231,6 +249,7 @@ namespace TestProject.Controllers {
             return File(bytes, mime, fileName);
         }
 
+        // Scope item: Support delete, move, and copy operations for files/folders.
         [HttpDelete("delete")]
         public IActionResult Delete([FromQuery] string path)
         {
@@ -245,7 +264,7 @@ namespace TestProject.Controllers {
             {
                 if (Directory.Exists(absolutePath))
                 {
-                    Directory.Delete(absolutePath, recursive: true);
+                    Directory.Delete(absolutePath, recursive: true); // recursively delete files in directory
                 }
                 else if (System.IO.File.Exists(absolutePath))
                 {
@@ -263,6 +282,7 @@ namespace TestProject.Controllers {
             }
         }
 
+        // Move or Copy files
         [HttpPost("action")]
         public IActionResult MoveOrCopy([FromQuery] string sourcePath, [FromQuery] string destinationPath, [FromQuery] string action)
         {
@@ -319,40 +339,33 @@ namespace TestProject.Controllers {
             }
         }
 
+        // Lists directories for users to choose from to move/copy items 
+        // Works from cur directory down
         [HttpGet("directories")]
         public IActionResult GetDirectories([FromQuery] string root)
         {
             if (string.IsNullOrWhiteSpace(root))
-            {
                 return BadRequest("Invalid or missing root path");
-            }
 
-            // Normalize the path
-            var candidatePath = Path.GetFullPath(
-                root.StartsWith(Config.RootDirectory)
-                    ? root
-                    : Path.Combine(Config.RootDirectory, root.TrimStart('/'))
-            );
+            var absoluteRoot = Path.Combine(Config.RootDirectory, root.TrimStart('/'));
 
-            // Validate path stays within root
-            var normalizedRoot = Path.GetFullPath(Config.RootDirectory);
-            if (!candidatePath.StartsWith(normalizedRoot))
-            {
+            // Prevent escaping root directory
+            if (!Path.GetFullPath(absoluteRoot).StartsWith(Path.GetFullPath(Config.RootDirectory)))
                 return BadRequest("Access outside of root is not allowed");
-            }
 
-            if (!Directory.Exists(candidatePath))
-            {
+            if (!Directory.Exists(absoluteRoot))
                 return BadRequest("Directory doesn't exist");
-            }
 
             try
             {
-                var dirs = Directory.GetDirectories(candidatePath, "*", SearchOption.TopDirectoryOnly).Select(path => new
-                {
-                    FullPath = path.Substring(normalizedRoot.Length).Replace('\\', '/'),
-                    Name = Path.GetFileName(path)
-                });
+                var dirs = Directory
+                    .GetDirectories(absoluteRoot, "*", SearchOption.TopDirectoryOnly)
+                    .Select(path => new
+                    {
+                        FullPath = path,
+                        Name = Path.GetFileName(path)
+                    });
+
                 return Ok(dirs);
             }
             catch (Exception ex)

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/kspiegel72/Documents/file-explorer/TestProject/TestProject.csproj": {}
+    "/Users/kspiegel72/Documents/file-explorer/TestProject.csproj": {}
   },
   "projects": {
-    "/Users/kspiegel72/Documents/file-explorer/TestProject/TestProject.csproj": {
+    "/Users/kspiegel72/Documents/file-explorer/TestProject.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/kspiegel72/Documents/file-explorer/TestProject/TestProject.csproj",
+        "projectUniqueName": "/Users/kspiegel72/Documents/file-explorer/TestProject.csproj",
         "projectName": "TestProject",
-        "projectPath": "/Users/kspiegel72/Documents/file-explorer/TestProject/TestProject.csproj",
+        "projectPath": "/Users/kspiegel72/Documents/file-explorer/TestProject.csproj",
         "packagesPath": "/Users/kspiegel72/.nuget/packages/",
-        "outputPath": "/Users/kspiegel72/Documents/file-explorer/TestProject/obj/",
+        "outputPath": "/Users/kspiegel72/Documents/file-explorer/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/kspiegel72/.nuget/NuGet/NuGet.Config"

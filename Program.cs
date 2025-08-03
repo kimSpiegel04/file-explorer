@@ -16,7 +16,7 @@ namespace TestProject
 
             // Scope item: Allow configuration of a server-side home/root directory via a variable
             // Read from environment variable or CLI arg
-            // Falls back to '/'
+            // Falls back to '/' (directory from dotnet run)
             if (args.Length > 0)
             {
                 Config.RootDirectory = args[0];
