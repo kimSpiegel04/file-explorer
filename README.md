@@ -4,8 +4,6 @@ A single-page file explorer built with C# (.NET 9) and vanilla JavaScript.
 
 This proof-of-concept demonstrates file system browsing, searching, uploading, downloading, and basic file operations — all rendered client-side via deep-linkable URLs. No third-party frameworks present.
 
-Fun fact: "Zomp" is a color. 
-
 ---
 
 ## Features
